@@ -27,29 +27,21 @@ def get_swift_datasets_provider(train_dataset, val_dataset):
 
 
 # Code borrowed from NVIDIA/Megatron-LM
-def get_batch_on_this_tp_rank(data_iterator):
+def get_batch_on_this_tp_rank(data, vp_stage=None):
     args = get_args()
 
-    data = next(data_iterator)
-    is_finished = data.pop('is_finished', False)
     if args.task_type == 'causal_lm':
         data['labels'] = torch.roll(data['labels'], -1, dims=-1)
         if 'loss_scale' in data:
             data['loss_scale'] = torch.roll(data['loss_scale'], -1, dims=-1)
     batch = to_device(data, 'cuda', non_blocking=True)
     if args.pipeline_model_parallel_size == 1:
-        pass
-    elif mpu.is_pipeline_first_stage():
+        return batch
+    if not mpu.is_pipeline_first_stage(ignore_virtual=False, vp_stage=vp_stage):
+        batch['input_ids'] = None
+    if not mpu.is_pipeline_last_stage(ignore_virtual=False, vp_stage=vp_stage):
         batch['labels'] = None
         batch['loss_scale'] = None
-    elif mpu.is_pipeline_last_stage():
-        batch['input_ids'] = None
-    else:
-        for key in ('input_ids', 'labels', 'loss_scale'):
-            batch[key] = None
-
-    if is_finished:
-        args.train_iters = args.curr_iteration + 1
 
     return batch
 
@@ -114,21 +106,4 @@ def get_batch_on_this_cp_rank(batch: Dict[str, Any]):
             if val is not None:
                 batch[key] = split_cp_inputs(val, packed_seq_params.cu_seqlens_q, -1)
 
-    return batch
-
-
-def get_batch(data_iterator):
-    """Generate a batch."""
-    # get batches based on the TP rank you are on
-    batch = get_batch_on_this_tp_rank(data_iterator)
-    args = get_args()
-    num_samples = batch.pop('num_samples')
-    text_position_ids = batch.pop('text_position_ids', None)
-    if text_position_ids is None:
-        text_position_ids = batch.get('position_ids')
-    if args.padding_free and text_position_ids is not None:
-        batch['packed_seq_params'] = get_packed_seq_params(text_position_ids)
-        batch['packed_seq_params'].num_samples = num_samples
-    # slice batch along sequence dimension for context parallelism
-    batch = get_batch_on_this_cp_rank(batch)
     return batch

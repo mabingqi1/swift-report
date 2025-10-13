@@ -1,4 +1,4 @@
-# 16s/it; 8 * 80GiB
+# 16s/it; 8 * 65GiB
 # use mcore==0.13
 PYTORCH_CUDA_ALLOC_CONF='expandable_segments:True' \
 NPROC_PER_NODE=8 \
@@ -7,6 +7,7 @@ megatron rlhf \
     --rlhf_type dpo \
     --load InternVL3_5-30B-A3B-mcore \
     --dataset 'swift/RLAIF-V-Dataset#20000' \
+    --load_from_cache_file true \
     --train_type full \
     --tensor_model_parallel_size 4 \
     --expert_tensor_parallel_size 1 \

@@ -17,6 +17,7 @@ logger = get_logger()
 
 @dataclass
 class RLHFMegatronArgumentsMixin:
+    rlhf_type: Literal['dpo', 'kto', 'rm'] = None
     ref_load: Optional[str] = None
     ref_adapter_load: Optional[str] = None
 
@@ -25,7 +26,31 @@ class RLHFMegatronArgumentsMixin:
     reference_free: bool = False
     label_smoothing: float = 0.
     f_divergence_type: str = 'reverse_kl'
-    loss_type: str = 'sigmoid'
+    loss_type: Optional[str] = None
+
+    # kto
+    desirable_weight: float = 1.
+    undesirable_weight: float = 1.
+    calculate_KL: Optional[bool] = None
+
+    # rm
+    center_rewards_coefficient: Optional[float] = None
+
+    def _init_kto(self):
+        if self.calculate_KL is None:
+            # Not all losses require a KL calculation
+            self.calculate_KL = True
+            if self.loss_type in ['apo_zero_unpaired']:
+                self.calculate_KL = False
+
+    def __post_init__(self):
+        if self.rlhf_type is None:
+            return
+        default_loss_type = {'kto': 'kto', 'dpo': 'sigmoid'}
+        if self.loss_type is None:
+            self.loss_type = default_loss_type.get(self.rlhf_type)
+        if self.rlhf_type == 'kto':
+            self._init_kto()
 
 
 @dataclass
@@ -80,8 +105,7 @@ class ExtraMegatronArguments(RLHFMegatronArgumentsMixin, MegatronTunerMixin):
     enable_channel_loss: bool = False
     task_type: Literal['causal_lm', 'seq_cls'] = None
     num_labels: Optional[int] = None
-    problem_type: Literal['regression', 'single_label_classification',
-                          'multi_label_classification'] = 'single_label_classification'
+    problem_type: Literal['regression', 'single_label_classification', 'multi_label_classification'] = None
 
     original_max_position_embeddings: Optional[int] = None
     partial_rotary_factor: Optional[float] = None
@@ -202,6 +226,10 @@ class MegatronArguments(ExtraMegatronArguments):
     overlap_grad_reduce: bool = False
     overlap_param_gather: bool = False
     distributed_timeout_minutes: int = 300000
+    num_layers_per_virtual_pipeline_stage: Optional[int] = None
+    num_virtual_stages_per_pipeline_rank: Optional[int] = None
+    microbatch_group_size_per_virtual_pipeline_stage: Optional[int] = None
+    pipeline_model_parallel_layout: Optional[str] = None
 
     # model
     num_layers: Optional[int] = None
@@ -251,9 +279,10 @@ class MegatronArguments(ExtraMegatronArguments):
     moe_permute_fusion: bool = False
     moe_aux_loss_coeff: float = 0.
     moe_z_loss_coeff: Optional[float] = None
-    moe_expert_capacity_factor: Optional[float] = None
     moe_shared_expert_overlap: bool = False
     moe_layer_recompute: bool = False
+    moe_expert_capacity_factor: Optional[float] = None
+    moe_pad_expert_input_to_capacity: bool = False
     moe_token_drop_policy: Literal['probs', 'position'] = 'probs'
 
     # mla
@@ -398,6 +427,7 @@ class MegatronArguments(ExtraMegatronArguments):
                 require_version('peft>=0.15')
             else:
                 require_version('peft>=0.12')
+        RLHFMegatronArgumentsMixin.__post_init__(self)
         MegatronTunerMixin.__post_init__(self)
         os.environ['CUDA_DEVICE_MAX_CONNECTIONS'] = '1'
         self._set_default()

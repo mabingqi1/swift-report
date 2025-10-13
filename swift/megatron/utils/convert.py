@@ -13,7 +13,8 @@ from megatron.training.checkpointing import save_checkpoint as mg_save_checkpoin
 from megatron.training.initialize import initialize_megatron
 from megatron.training.utils import get_ltor_masks_and_position_ids
 
-from swift.llm import ExportArguments, HfConfigFactory, prepare_model_template, save_checkpoint, to_device
+from swift.llm import (ExportArguments, HfConfigFactory, prepare_model_template, save_checkpoint, to_device,
+                       to_float_dtype)
 from swift.utils import get_logger, get_n_params_grads
 from ..argument import MegatronArguments
 from ..model import get_megatron_model_meta
@@ -69,6 +70,8 @@ def _model_cpu_forward_context(modules, torch_dtype=None, device=None, share_emb
     def _to_cuda_hook(module, args):
         if device is not None or torch_dtype is not None:
             module.to(device=device, dtype=torch_dtype)
+            args = to_float_dtype(args, dtype=torch_dtype)
+        return args
 
     def _to_cpu_hook(module, args, output):
         if share_embedding and module is modules[0]:
@@ -282,10 +285,10 @@ def convert_mcore2hf(args: ExportArguments) -> None:
     extra_config['adapter_load'] = adapter_load
     if args.mcore_model is not None:
         extra_config['load'] = args.mcore_model
+    kwargs.update(extra_config)
     megatron_args = MegatronArguments(
         **kwargs,
         **current_convert_kwargs,
-        **extra_config,
         save=args.output_dir if args.to_mcore else None,
         torch_dtype=args.torch_dtype)
     patch_megatron_tokenizer(processor)
