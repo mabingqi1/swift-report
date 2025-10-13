@@ -111,6 +111,7 @@ class LLMModelType:
     gemma = 'gemma'
     gemma2 = 'gemma2'
     gemma3_text = 'gemma3_text'
+    medgemma_text = 'medgemma_text'
 
     skywork = 'skywork'
     skywork_o1 = 'skywork_o1'
@@ -271,7 +272,7 @@ class MLLMModelType:
     gemma3_vision = 'gemma3_vision'
     gemma3n = 'gemma3n'
     mistral_2503 = 'mistral_2503'
-
+    medgemma_it = 'medgemma_it'
 
 class ModelType(LLMModelType, MLLMModelType, BertModelType, RMModelType):
 

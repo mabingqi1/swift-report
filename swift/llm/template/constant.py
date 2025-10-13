@@ -83,6 +83,7 @@ class LLMTemplateType:
     wizardlm2_moe = 'wizardlm2_moe'
     gemma = 'gemma'
     gemma3_text = 'gemma3_text'
+    medgemma_text = 'medgemma_text'
     phi3 = 'phi3'
     phi4 = 'phi4'
 
@@ -219,6 +220,7 @@ class MLLMTemplateType:
     valley = 'valley'
     gemma3_vision = 'gemma3_vision'
     gemma3n = 'gemma3n'
+    medgemma_it = 'medgemma_it'
     mistral_2503 = 'mistral_2503'
 
 

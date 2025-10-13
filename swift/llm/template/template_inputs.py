@@ -250,7 +250,25 @@ class StdTemplateInputs:
                 if isinstance(value, dict):
                     value = value['url']
                 if value:
-                    res[f'{key}s'].append(value)
+                    # Handle unknown media types by treating them as images
+                    if key in ['image3d', 'ct', 'mri', 'xray', 'dicom']:
+                        # Medical image types - treat as images
+                        if isinstance(value, list):
+                            # If it's a list of images, add each one
+                            for img in value:
+                                res['images'].append(img)
+                        else:
+                            res['images'].append(value)
+                    else:
+                        # Initialize unknown media type if not exists
+                        media_key = f'{key}s'
+                        if media_key not in res:
+                            res[media_key] = []
+                        if isinstance(value, list):
+                            # If it's a list, add each item
+                            res[media_key].extend(value)
+                        else:
+                            res[media_key].append(value)
             message['content'] = new_content
         return res
 

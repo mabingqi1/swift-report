@@ -78,6 +78,7 @@ class MLLMModelArch:
     megrez_omni = 'megrez_omni'
     valley = 'valley'
     gemma3n = 'gemma3n'
+    medgemma_it = 'medgemma_it'
     mistral_2503 = 'mistral_2503'
     keye_vl = 'keye_vl'
 
@@ -681,6 +682,14 @@ register_model_arch(
         language_model='model.language_model',
         aligner=['model.embed_vision', 'model.embed_audio'],
         vision_tower=['model.vision_tower', 'model.audio_tower'],
+    ))
+
+register_model_arch(
+    MultiModelKeys(
+        MLLMModelArch.medgemma_it,
+        language_model='model.language_model',
+        aligner=['model.multi_modal_projector'],
+        vision_tower=['model.vision_tower'],
     ))
 
 register_model_arch(
