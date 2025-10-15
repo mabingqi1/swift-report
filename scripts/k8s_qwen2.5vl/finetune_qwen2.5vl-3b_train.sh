@@ -24,7 +24,7 @@ swift sft \
     --model /yinghepool/zhangshuheng/models/Qwen2.5-VL-3B-Instruct \
     --dataset /yinghepool/zhangshuheng/codes/train/our-report/case_list/20250926-brain_report_thick-tiantan-10w-train-clean-e2e_report-head_wwwl_clip.jsonl \
     --val_dataset /yinghepool/zhangshuheng/codes/train/our-report/case_list/20250926-brain_report_thick-tiantan-10w-test-clean-e2e_report-head_wwwl_clip.jsonl \
-    --output_dir output/HeadReport-tiantan_Qwen2.5VL-3B_wwwl_rslora \
+    --output_dir output/HeadReport-tiantan_Qwen2.5VL-3B_wwwl_fl \
     --num_train_epochs 5 \
     --per_device_train_batch_size 4 \
     --per_device_eval_batch_size 1 \
