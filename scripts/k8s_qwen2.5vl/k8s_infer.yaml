@@ -1,0 +1,8 @@
+pod_name: mbq-head-tt10w--qwen25vl-3b-rslora-r64--infer--1015
+cmd: bash /yinghepool/mabingqi/ms-swift/scripts/k8s_qwen2.5vl/k8s_infer.sh
+# gpu_name: "NVIDIA-H100-80GB-HBM3"
+gpu_name: "NVIDIA-H200"
+gpu_num: 1
+namespace: mlops
+container_name: pytorch
+image_name: 172.16.2.121:30002/library/mmengine-base:0.14
