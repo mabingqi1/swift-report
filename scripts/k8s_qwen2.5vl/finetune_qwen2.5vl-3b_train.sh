@@ -18,17 +18,17 @@ cd /yinghepool/mabingqi/ms-swift
 nproc_per_node=8
 # CUDA_VISIBLE_DEVICES= \
 NPROC_PER_NODE=$nproc_per_node \
-VIDEO_MAX_PIXELS=114896 \
-FPS_MAX_FRAMES=70 \
+VIDEO_MAX_PIXELS=160000 \
+FPS_MAX_FRAMES=64 \
 swift sft \
     --model /yinghepool/zhangshuheng/models/Qwen2.5-VL-3B-Instruct \
     --dataset /yinghepool/mm-data/report/tiantan/20250926-tiantan10w/AISU_level/tiantan_head_7.9w_meta_stdWindow_clean-aisu-train.jsonl \
-    --val_dataset /yinghepool/mm-data/report/tiantan/20250926-tiantan10w/AISU_level/tiantan_head_7.9w_meta_stdWindow_clean-aisu-val.jsonl\
+    --val_dataset /yinghepool/mm-data/report/tiantan/20250926-tiantan10w/AISU_level/tiantan_head_7.9w_meta_stdWindow_clean-aisu-val.jsonl \
     --output_dir output/HeadReport-tiantan_Qwen2.5VL-3B_wwwl_aisu-v1 \
-    --num_train_epochs 5 \
+    --num_train_epochs 8 \
     --per_device_train_batch_size 4 \
     --per_device_eval_batch_size 1 \
-    --learning_rate 2e-4 \
+    --learning_rate 1e-4 \
     --freeze_vit false \
     --freeze_llm false \
     --freeze_aligner false \
@@ -42,7 +42,7 @@ swift sft \
     --save_steps 500 \
     --save_total_limit 5 \
     --logging_steps 5 \
-    --max_length 81920 \
+    --max_length 65536 \
     --warmup_ratio 0.05 \
     --dataloader_num_workers 8 \
     --torch_dtype bfloat16 \

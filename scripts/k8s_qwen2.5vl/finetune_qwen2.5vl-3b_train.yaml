@@ -1,5 +1,4 @@
-pod_name: mbq-head-tt10w--qwen25vl-3b-aisuv1--train--1014
-# pod_name: mbq-head-tt10w--qwen25vl-3b-review--train--1014
+pod_name: mbq-head-tt10w--qwen25vl-3b-res-ml--train--1017
 cmd: bash /yinghepool/mabingqi/ms-swift/scripts/k8s_qwen2.5vl/finetune_qwen2.5vl-3b_train.sh
 # gpu_name: "NVIDIA-H100-80GB-HBM3"
 gpu_name: "NVIDIA-H200"

@@ -23,39 +23,19 @@ default_abnorm_list = [
 ]
 
 default_prompt_template = """
-你是一个医学文本分析助手。请严格按照以下要求从颅脑报告中提取疾病信息。
+根据医生颅脑报告从给定的疾病列表中找到病人所患的疾病，并输出一个疾病组成的json格式list，例如["xxx","xxx"]，不要嵌套list。
+注意：
+- **重要**请严格输出疾病列表中存在的疾病名称，不要输出不存在的疾病名称。
+- 报告中的疾病带解剖部位或位置信息，需去掉解剖部位或位置信息后与疾病列表匹配。
+- 在报告内容中疾病名字可能有变化，要简单分析。
+- 老年脑等价于脑萎缩。
+- 缺血性脑白质病变等价于缺血性白质病变。
+- 脑水肿等价于水肿。
+- 大脑镰下疝、小脑扁桃体疝、小脑幕切迹疝等价于脑疝。
 
-【任务】
-从医生的颅脑报告中识别病人所患的疾病,并以JSON列表格式输出。
-
-【输出格式】
-必须严格输出JSON列表格式,例如: ["脑梗死", "脑萎缩"]
-如果没有检测到任何疾病,输出空列表: []
-
-【匹配规则】
-1. 只能输出疾病列表中存在的疾病名称,不得自行创造或修改
-2. 报告中的疾病通常带有解剖部位(如"左侧基底节区脑梗死"),需去除解剖部位后与疾病列表匹配(应输出"脑梗死")
-3. 疾病的同义词或相关表述按以下规则映射:
-   - "老年脑"、"老年性脑改变" → 脑萎缩
-   - "缺血性脑白质病变"、"脑白质疏松" → 缺血性白质病变
-   - "脑水肿"、"脑组织水肿" → 水肿
-   - "大脑镰下疝"、"小脑扁桃体疝"、"小脑幕切迹疝"、"脑组织疝出" → 脑疝
-   - "蛛网膜下腔出血"、"SAH" → 蛛网膜下腔出血
-   - "硬膜外血肿"、"EDH" → 硬膜外血肿
-   - "硬膜下血肿"、"SDH" → 硬膜下血肿
-4. 同一疾病在报告中多次出现或位于不同部位,只输出一次
-5. 疑似、可能、考虑的疾病也应当提取
-
-【疾病列表】
-{abnorm_list}
-
-【报告内容】
-{report}
-
-【输出】
-请直接输出JSON列表,不要包含任何解释或其他文字:
+**疾病列表**：{abnorm_list}
+报告: {report}
 """
-
 
 @dataclass
 class ReportPerformanceComputorConfig:
@@ -174,7 +154,16 @@ class ReportPerformanceComputor:
                 precision=precision,
                 f1=f1
             ))
+        
+        # 先创建DataFrame用于计算macro mean
         df_out = pd.DataFrame(infos)
+        
+        # Macro mean: 所有类别指标的平均值
+        macro_recall = round(df_out["recall"].mean(), 4)
+        macro_precision = round(df_out["precision"].mean(), 4)
+        macro_f1 = round(df_out["f1"].mean(), 4)
+        
+        # Micro mean: 所有类别的TP、FP、FN、TN加总后计算
         total_tp = df_out["tp"].sum()
         total_fp = df_out["fp"].sum()
         total_fn = df_out["fn"].sum()
@@ -182,8 +171,10 @@ class ReportPerformanceComputor:
         total_recall = round(total_tp / (total_tp + total_fn + 1e-5), 4)
         total_precision = round(total_tp / (total_tp + total_fp + 1e-5), 4)
         total_f1 = round(2 * (total_precision * total_recall) / (total_precision + total_recall + 1e-6), 4)
+        
+        # 添加汇总行
         infos.append(dict(
-            name="total",
+            name="micro_mean",
             gt=total_tp + total_fn,
             tp=total_tp,
             fp=total_fp,
@@ -193,9 +184,22 @@ class ReportPerformanceComputor:
             precision=total_precision,
             f1=total_f1
         ))
+        
+        infos.append(dict(
+            name="macro_mean",
+            gt="-",
+            tp="-",
+            fp="-",
+            fn="-",
+            tn="-",
+            recall=macro_recall,
+            precision=macro_precision,
+            f1=macro_f1
+        ))
+        
+        # 重新创建包含所有行的DataFrame
         df_out = pd.DataFrame(infos)
         return df_out
-    
     
     def deal_one_with_path_jsonl(self, path_jsonl: str, is_save: bool=True):
         assert path_jsonl.endswith(".jsonl")
