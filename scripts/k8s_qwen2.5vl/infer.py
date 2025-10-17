@@ -53,7 +53,7 @@ class SwiftInference:
                             "type": "video",
                             "video": path_image,
                         },
-                        {"type": "text", "text": "Extract findings and impressions from this medical video."},
+                        {"type": "text", "text": "判断医疗影像是否有如下疾病：囊肿, 水肿, 破入脑室, 硬膜下积液, 硬膜下血肿, 硬膜外血肿, 缺血性白质病变, 脂肪瘤, 脑出血, 脑挫裂伤, 脑梗死, 脑疝, 脑肿物, 脑萎缩, 腔隙性脑梗死, 蛛网膜下腔出血, 软化灶, 钙化，如果有提取该医学影像中关于该疾病的描述，如没有返回空值"},
                     ],
                 }
             ]
@@ -100,7 +100,7 @@ class SwiftInference:
 if __name__ == "__main__":
     model_path = "/yinghepool/zhangshuheng/models/Qwen2.5-VL-3B-Instruct"
     
-    adapter_path = "/yinghepool/mabingqi/ms-swift/output/HeadReport-tiantan_Qwen2.5VL-3B_wwwl_rslora/v0-20251014-084959/checkpoint-4000"
+    adapter_path = "/yinghepool/mabingqi/ms-swift/output/HeadReport-tiantan_Qwen2.5VL-3B_wwwl_aisu-v1/v1-20251016-053149/checkpoint-5470"
     path_datalist = "/yinghepool/mm-data/report/tiantan/20250926-tiantan10w/tiantan_head_7.9w_meta_stdWindow_clean-test.jsonl"
     out_dirname = "infer-tiantan_head_5k-test.jsonl"
     
